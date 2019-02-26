@@ -319,12 +319,12 @@ def get_k_denser(sorted_keys, k, radius, dist_fn):
 
 	for key in sorted_keys:
 		if not is_already_taken(k_denser, key, radius, dist_fn):
-			k_partterns.append(pattern)
+			k_denser.append(key)
 		
 		if len(k_denser) == k:
 			break
 
-	return k_partterns
+	return k_denser
 
 
 def find_patterns(ts, k, n1, n2, c, discretization_amount, w, radius, h):
@@ -333,9 +333,9 @@ def find_patterns(ts, k, n1, n2, c, discretization_amount, w, radius, h):
 	num_mezzo_breakpoints = c - 2;
 	breakpoints = [None] * c
 	previous_subsequences = [None] * c
-	d = euclidean_distance()
-	patterns = []
-	all_instances = {}
+	d = euclidean_distance
+	patterns = {}
+	all_instances = []
 	tree = MyBKTree(instance_euclidean_distance)
 	kernel = gaussian
 
@@ -370,13 +370,13 @@ def find_patterns(ts, k, n1, n2, c, discretization_amount, w, radius, h):
 			
 			# reduce with PAA to w points
 			rd_sub = std_sub.reduce_dimension_isaac(w)
-			disc_sub = rd_sub.discretizeNormalized(discretizationAmount)
+			disc_sub = rd_sub.discretize(discretization_amount)
 
 			# ---------------------Triviality-check------------------------
 			if t > 0:
 				s1 = disc_sub.datapoints
 				s2 = previous_subsequences[i].datapoints
-				if (d.distance(s1, s2) < radius) :
+				if (d(s1, s2) < radius) :
 					continue;
 			# ------------------end-of-Triviality-check--------------------
 			instance = {
@@ -397,7 +397,7 @@ def find_patterns(ts, k, n1, n2, c, discretization_amount, w, radius, h):
 			patterns[subsequence] = {
 				'representation': subsequence,
 				'density': 0.0,
-				'instances': []
+				'instances': list()
 			}
 
 		matches = tree.query(instance, radius)
@@ -421,3 +421,27 @@ def find_patterns(ts, k, n1, n2, c, discretization_amount, w, radius, h):
 	return k_denser_patterns
 
 
+
+
+
+#==============================================================================
+# Test scenario
+#==============================================================================
+file_name = 'sunspot.dat'
+
+ts = Reader(file_name).create_time_series()
+
+
+k = 1;
+n1 = 100;
+n2 = 200;
+c = 3;
+discretization_amount = 1;
+w = 10;
+radius = 1;
+h = 1.0;
+
+patterns = find_patterns(ts, k, n1, n2, c, discretization_amount, w, radius, h)
+
+for p in patterns:
+	print(p)
